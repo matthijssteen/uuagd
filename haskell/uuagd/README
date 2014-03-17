@@ -1,6 +1,3 @@
-Utrecht University Attribute Grammar Debugger
-=============================================
-
 The Utrecht University Attribute Grammar Debugger. It consists of two parts.
 A preprocessor for the UUAG Compiler written in Java using Antlr 4 that will
 add an extra synthesized attribute named uuagd containing the debug information.

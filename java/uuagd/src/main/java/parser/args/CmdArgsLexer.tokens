@@ -1,0 +1,4 @@
+SingleQuotedString=1
+DoubleQuotedString=2
+Word=3
+WhiteSpace=4

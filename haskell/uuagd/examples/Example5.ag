@@ -1,0 +1,45 @@
+imports {
+import Text.Blaze.Html5 (toHtml)
+import UUAGD.Html.Renderer
+}
+
+data Root
+   | Root  tree  :: Tree
+
+data Tree
+   | Node  left  :: Tree
+           right :: Tree
+   | Tip   value :: Int
+
+set Every = Root Tree
+
+deriving Every : Show
+
+attr Every
+   syn transformed :: self
+
+attr Tree
+   inh replacement :: Int
+   syn sum         :: Int
+
+sem Tree
+  | Tip   lhs.transformed = Tip @lhs.replacement
+          lhs.sum         = @value
+  | Node  lhs.sum         = @left.sum + @right.sum
+
+sem Root
+  | Root  tree.replacement = @tree.sum
+
+{
+main :: IO ()
+main = putStrLn result
+
+testRoot :: Root
+testRoot = Root (Node (Tip 1) (Node (Tip 2) (Tip 3)))
+
+test :: T_Root
+test = sem_Root testRoot
+
+result :: String
+result = render $ uuagd_Syn_Root (wrap_Root test Inh_Root)
+}
