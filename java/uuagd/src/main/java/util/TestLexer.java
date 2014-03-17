@@ -18,41 +18,41 @@ public class TestLexer {
 	public static <T extends Lexer> void testLexer(Class<T> cls, File input) throws Exception {
 		testLexer(cls, new BufferedReader(new FileReader(input)));
 	}
-	
+
 	public static <T extends Lexer> void testLexer(Class<T> cls, String input) throws Exception {
 		testLexer(cls, new StringReader(input));
 	}
-	
+
 	public static <T extends Lexer> void testLexer(Class<T> cls, Reader in) throws Exception {
 		ANTLRInputStream input = new ANTLRInputStream(in);
 		T lexer = cls.getConstructor(CharStream.class).newInstance(input);
-        
+
 		String[] tokenNames = (String[])cls.getDeclaredField("tokenNames").get(lexer);
-		
-        List<String[]> rows = new ArrayList<String[]>();
-        Token token = lexer.nextToken();
-        while(token.getType() != Recognizer.EOF) {
-        	rows.add(new String[] { tokenNames[token.getType()], Strings.toLiteral(token.getText()), token.getLine() + ":" + token.getCharPositionInLine() });
-            token = lexer.nextToken();
-        }
-        printRows(rows);
+
+		List<String[]> rows = new ArrayList<String[]>();
+		Token token = lexer.nextToken();
+		while(token.getType() != Recognizer.EOF) {
+			rows.add(new String[] { tokenNames[token.getType()], Strings.toLiteral(token.getText()), token.getLine() + ":" + token.getCharPositionInLine() });
+			token = lexer.nextToken();
+		}
+		printRows(rows);
 	}
-	
+
 	public static void printRows(List<String[]> rows) {
 		int n = rows.get(0).length;
-		
+
 		int[] maxLengths = new int[n];
 		for (String[] row: rows) {
 			for (int i = 0; i < n; i++) {
 				maxLengths[i] = Math.max(row[i].length(), maxLengths[i]);
 			}
 		}
-		
+
 		int rowLength = n - 1;
 		for (int length: maxLengths) {
 			rowLength += length;
 		}
-		
+
 		for (String[] row: rows) {
 			StringBuffer sb = new StringBuffer(rowLength);
 			for (int i = 0; i < n; i++) {
