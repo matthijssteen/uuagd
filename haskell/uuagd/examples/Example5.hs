@@ -1,32 +1,31 @@
 
 
--- UUAGC 0.9.50.2 (/tmp/uuagd1620990102194001984.ag)
+-- UUAGC 0.9.50.2 (/tmp/uuagd1672053706394119174.ag)
 
-{-# LINE 1 "/tmp/uuagd1620990102194001984.ag" #-}
+{-# LINE 1 "Example5.ag" #-}
 
 import Text.Blaze.Html5 (toHtml)
 import UUAGD.Html.Renderer
-{-# LINE 10 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+{-# LINE 10 "Example5.hs" #-}
 
-{-# LINE 54 "/tmp/uuagd1620990102194001984.ag" #-}
+{-# LINE 53 "Example5.ag" #-}
 
 import qualified UUAGD.CodeGen as UUAGD
 import UUAGD.Html.CodeGen
-{-# LINE 16 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
-{-# LINE 40 "/tmp/uuagd1620990102194001984.ag" #-}
+{-# LINE 16 "Example5.hs" #-}
+{-# LINE 40 "Example5.ag" #-}
 
 main :: IO ()
-main = putStrLn result
+main = do
+  result <- render $ uuagd_Syn_Root (wrap_Root test Inh_Root)
+  putStrLn result
 
 testRoot :: Root
 testRoot = Root (Node (Tip 1) (Node (Tip 2) (Tip 3)))
 
 test :: T_Root
 test = sem_Root testRoot
-
-result :: String
-result = render $ uuagd_Syn_Root (wrap_Root test Inh_Root)
-{-# LINE 30 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+{-# LINE 29 "Example5.hs" #-}
 -- Root --------------------------------------------------------
 data Root = Root (Tree)
           deriving ( Show)
@@ -55,29 +54,29 @@ sem_Root_Root tree_ =
          _treeItransformed :: Tree
          _treeIuuagd :: Html
          _treeOreplacement =
-             ({-# LINE 37 "/tmp/uuagd1620990102194001984.ag" #-}
+             ({-# LINE 37 "Example5.ag" #-}
               _tree'replacement
-              {-# LINE 61 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+              {-# LINE 60 "Example5.hs" #-}
               )
          _tree'replacement =
-             ({-# LINE 38 "/tmp/uuagd1620990102194001984.ag" #-}
+             ({-# LINE 38 "Example5.ag" #-}
               _treeIsum
-              {-# LINE 66 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+              {-# LINE 65 "Example5.hs" #-}
               )
          _lhsOuuagd =
-             ({-# LINE 62 "/tmp/uuagd1620990102194001984.ag" #-}
+             ({-# LINE 61 "Example5.ag" #-}
               UUAGD.markupAlt "Root" "Root" [UUAGD.markupTerminal "tree" _treeIuuagd, UUAGD.markupAttrUsage "tree" "replacement" ((toHtml . show) (_tree'replacement     :: Int))]
-              {-# LINE 71 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+              {-# LINE 70 "Example5.hs" #-}
               )
          _transformed =
-             ({-# LINE 19 "/tmp/uuagd1620990102194001984.ag" #-}
+             ({-# LINE 19 "Example5.ag" #-}
               Root _treeItransformed
-              {-# LINE 76 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+              {-# LINE 75 "Example5.hs" #-}
               )
          _lhsOtransformed =
-             ({-# LINE 19 "/tmp/uuagd1620990102194001984.ag" #-}
+             ({-# LINE 19 "Example5.ag" #-}
               _transformed
-              {-# LINE 81 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+              {-# LINE 80 "Example5.hs" #-}
               )
          ( _treeIsum,_treeItransformed,_treeIuuagd) =
              tree_ _treeOreplacement
@@ -121,39 +120,39 @@ sem_Tree_Node left_ right_ =
               _rightItransformed :: Tree
               _rightIuuagd :: Html
               _lhsOsum =
-                  ({-# LINE 32 "/tmp/uuagd1620990102194001984.ag" #-}
+                  ({-# LINE 32 "Example5.ag" #-}
                    _lhs'sum
-                   {-# LINE 127 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+                   {-# LINE 126 "Example5.hs" #-}
                    )
               _lhs'sum =
-                  ({-# LINE 33 "/tmp/uuagd1620990102194001984.ag" #-}
+                  ({-# LINE 33 "Example5.ag" #-}
                    _leftIsum + _rightIsum
-                   {-# LINE 132 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+                   {-# LINE 131 "Example5.hs" #-}
                    )
               _lhsOuuagd =
-                  ({-# LINE 65 "/tmp/uuagd1620990102194001984.ag" #-}
+                  ({-# LINE 64 "Example5.ag" #-}
                    UUAGD.markupAlt "Tree" "Node" [UUAGD.markupTerminal "left" _leftIuuagd, UUAGD.markupTerminal "right" _rightIuuagd, UUAGD.markupAttrUsage "lhs" "sum" ((toHtml . show) (_lhs'sum     :: Int))]
-                   {-# LINE 137 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+                   {-# LINE 136 "Example5.hs" #-}
                    )
               _transformed =
-                  ({-# LINE 19 "/tmp/uuagd1620990102194001984.ag" #-}
+                  ({-# LINE 19 "Example5.ag" #-}
                    Node _leftItransformed _rightItransformed
-                   {-# LINE 142 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+                   {-# LINE 141 "Example5.hs" #-}
                    )
               _lhsOtransformed =
-                  ({-# LINE 19 "/tmp/uuagd1620990102194001984.ag" #-}
+                  ({-# LINE 19 "Example5.ag" #-}
                    _transformed
-                   {-# LINE 147 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+                   {-# LINE 146 "Example5.hs" #-}
                    )
               _leftOreplacement =
-                  ({-# LINE 22 "/tmp/uuagd1620990102194001984.ag" #-}
+                  ({-# LINE 22 "Example5.ag" #-}
                    _lhsIreplacement
-                   {-# LINE 152 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+                   {-# LINE 151 "Example5.hs" #-}
                    )
               _rightOreplacement =
-                  ({-# LINE 22 "/tmp/uuagd1620990102194001984.ag" #-}
+                  ({-# LINE 22 "Example5.ag" #-}
                    _lhsIreplacement
-                   {-# LINE 157 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+                   {-# LINE 156 "Example5.hs" #-}
                    )
               ( _leftIsum,_leftItransformed,_leftIuuagd) =
                   left_ _leftOreplacement
@@ -168,33 +167,33 @@ sem_Tree_Tip value_ =
               _lhsOsum :: Int
               _lhsOuuagd :: Html
               _lhsOtransformed =
-                  ({-# LINE 27 "/tmp/uuagd1620990102194001984.ag" #-}
+                  ({-# LINE 27 "Example5.ag" #-}
                    _lhs'transformed
-                   {-# LINE 174 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+                   {-# LINE 173 "Example5.hs" #-}
                    )
               _lhs'transformed =
-                  ({-# LINE 28 "/tmp/uuagd1620990102194001984.ag" #-}
+                  ({-# LINE 28 "Example5.ag" #-}
                    Tip _lhsIreplacement
-                   {-# LINE 179 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+                   {-# LINE 178 "Example5.hs" #-}
                    )
               _lhsOsum =
-                  ({-# LINE 29 "/tmp/uuagd1620990102194001984.ag" #-}
+                  ({-# LINE 29 "Example5.ag" #-}
                    _lhs'sum
-                   {-# LINE 184 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+                   {-# LINE 183 "Example5.hs" #-}
                    )
               _lhs'sum =
-                  ({-# LINE 30 "/tmp/uuagd1620990102194001984.ag" #-}
+                  ({-# LINE 30 "Example5.ag" #-}
                    value_
-                   {-# LINE 189 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+                   {-# LINE 188 "Example5.hs" #-}
                    )
               _lhsOuuagd =
-                  ({-# LINE 66 "/tmp/uuagd1620990102194001984.ag" #-}
+                  ({-# LINE 65 "Example5.ag" #-}
                    UUAGD.markupAlt "Tree" "Tip" [UUAGD.markupNonTerminal "value" ((toHtml . show) value_), UUAGD.markupAttrUsage "lhs" "transformed" ((toHtml . show) (_lhs'transformed     :: Tree)), UUAGD.markupAttrUsage "lhs" "sum" ((toHtml . show) (_lhs'sum     :: Int))]
-                   {-# LINE 194 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+                   {-# LINE 193 "Example5.hs" #-}
                    )
               _transformed =
-                  ({-# LINE 19 "/tmp/uuagd1620990102194001984.ag" #-}
+                  ({-# LINE 19 "Example5.ag" #-}
                    Tip value_
-                   {-# LINE 199 "/sud/Code/Git/uuagd/haskell/uuagd/examples/Example5.hs" #-}
+                   {-# LINE 198 "Example5.hs" #-}
                    )
           in  ( _lhsOsum,_lhsOtransformed,_lhsOuuagd)))

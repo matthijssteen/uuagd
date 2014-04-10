@@ -12,10 +12,10 @@ public class AttrId extends Value {
 	public String scope;
 	public String name;
 	
-	public AttrId(String qualName) throws Exception {
+	public AttrId(String qualName) {
 		String[] parts = qualName.trim().split("\\.");
 		if (parts.length < 1 || parts.length > 4) {
-			throw new Exception("A qualified attribute name should be in one of the following forms: name, scope.name, DataType.name, DataType.scope.name, DataType.Constructor.name, DataType.Constructor.scope.name");
+			throw new IllegalArgumentException("A qualified attribute name should be in one of the following forms: name, scope.name, DataType.name, DataType.scope.name, DataType.Constructor.name, DataType.Constructor.scope.name");
 		}
 		List<String> names = Arrays.asList(parts);
 		Collections.reverse(names);

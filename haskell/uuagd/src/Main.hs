@@ -7,6 +7,6 @@ import Paths_uuagd
 
 main :: IO ()
 main = do
-  filename <- getDataFileName "uuagd-1.0.jar"
+  filename <- getDataFileName "resources/uuagd-1.1.jar"
   args <- getArgs
   callProcess "java" $ ["-jar", filename] ++ args

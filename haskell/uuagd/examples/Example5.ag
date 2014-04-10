@@ -32,14 +32,13 @@ sem Root
 
 {
 main :: IO ()
-main = putStrLn result
+main = do
+  result <- render $ uuagd_Syn_Root (wrap_Root test Inh_Root)
+  putStrLn result
 
 testRoot :: Root
 testRoot = Root (Node (Tip 1) (Node (Tip 2) (Tip 3)))
 
 test :: T_Root
 test = sem_Root testRoot
-
-result :: String
-result = render $ uuagd_Syn_Root (wrap_Root test Inh_Root)
 }

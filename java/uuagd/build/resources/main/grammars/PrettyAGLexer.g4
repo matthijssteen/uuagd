@@ -10,7 +10,7 @@ ANY_CHAR : . -> skip;
 // A data type marked by two prepended dashes
 // and trailed by 60 - length(data type) dashes.
 AG_DATA_TYPE
-  : '-- ' [A-Z][a-zA-Z0-9_]* ' --' [\-]* ('\r'? '\n' | '\r')
+  : '-- ' [A-Z][a-zA-Z0-9_\']* ' --' [\-]* ('\r'? '\n' | '\r')
     {
       // After removing the dashes and whitespace,
       // what remains will be the data type.
@@ -42,8 +42,8 @@ ALT : 'alternative';
 KID : 'child';
 
 // Names.
-AG_TYPE : [A-Z][a-zA-Z0-9_']*;
-IDENT   : [a-z][a-zA-Z0-9_']*;
+AG_TYPE : [A-Z][a-zA-Z0-9_\']*;
+IDENT   : [a-z][a-zA-Z0-9_\']*;
 
 // Haskell types are a bit more complex to lex,
 // because we do not want to specify how Haskell types

@@ -18,15 +18,13 @@ public class Value {
 					String repr = val != null ? val.toString() : "null";
 					if (!first) {
 						sb.append(", ");
-					}
-					else {
+					} else {
 						first = false;
 					}
 					sb.append(field.getName());
 					sb.append("=");
 					sb.append(val != null && field.getType() == String.class ? Strings.toLiteral(repr) : repr);
-				}
-				catch (Exception e) {
+				} catch (Exception e) {
 					e.printStackTrace();
 				}				
 			}

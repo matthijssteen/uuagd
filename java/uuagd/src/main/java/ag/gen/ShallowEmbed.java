@@ -1,4 +1,4 @@
-package ag;
+package ag.gen;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -6,14 +6,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ag.AttrId;
+import ag.AttrUsage;
+import ag.PrettyListener;
+import ag.Settings;
 import parser.pretty.PrettyAGParser;
 import parser.pretty.PrettyAGParserBaseListener;
 import util.Strings;
 
-public class CodeGen extends PrettyAGParserBaseListener {
+public class ShallowEmbed extends PrettyAGParserBaseListener {
 	final private PrintWriter out;
-	final private String castFn;
-	final private String castTy;
 	final private Set<String> dataTypes;
 	final private Map<String, Map<String, List<AttrUsage>>> attrUsages;
 	final private Settings settings;
@@ -22,10 +24,8 @@ public class CodeGen extends PrettyAGParserBaseListener {
 	private String alt;
 	private boolean firstAttr;
 	
-	public CodeGen(PrintWriter out, String castFn, String castTy, PrettyListener agInfo, Map<String, Map<String, List<AttrUsage>>> attrUsages, Settings settings) throws IOException {
+	public ShallowEmbed(PrintWriter out, PrettyListener agInfo, Map<String, Map<String, List<AttrUsage>>> attrUsages, Settings settings) throws IOException {
 		this.out = out;
-		this.castFn = castFn;
-		this.castTy = castTy;
 		this.dataTypes = agInfo.kidsByDataType.keySet();
 		this.attrUsages = attrUsages;
 		this.settings = settings;
@@ -40,7 +40,7 @@ public class CodeGen extends PrettyAGParserBaseListener {
 		}
 		out.println("}");
 		out.println("attr *");
-		out.println("  syn uuagd :: {" + castTy + "}");
+		out.println("  syn uuagd :: {" + settings.castTy + "}");
 	}
 
 	@Override
@@ -84,10 +84,9 @@ public class CodeGen extends PrettyAGParserBaseListener {
 				out.print("@");
 				out.print(name);
 				out.print(".uuagd");
-			}
-			else {
+			} else {
 				out.print("(");
-				out.print(castFn);
+				out.print(settings.castFn);
 				out.print(" @");
 				out.print(name);
 				out.print(")");
@@ -111,7 +110,7 @@ public class CodeGen extends PrettyAGParserBaseListener {
 				out.print(" ");
 				out.print(Strings.toLiteral(attr.name));
 				out.print(" (");
-				out.print(castFn);
+				out.print(settings.castFn);
 				out.print(" (@");
 				out.print(attr.getAliasScopedName());
 				if (type != null) {

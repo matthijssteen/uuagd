@@ -1,13 +1,34 @@
 package ag;
 
+import java.io.File;
 import java.util.List;
 
+import net.sourceforge.argparse4j.annotation.Arg;
 import util.Value;
 
 public class Settings extends Value {
+	@Arg
+	public String uuagcOptions;
+	
+	@Arg
+	public File agFile;
+	
+	@Arg
+	public String castFn;
+	
+	@Arg
+	public String castTy;
+	
+	@Arg
 	public List<AttrId> whitelist;
+	
+	@Arg
 	public List<AttrId> blacklist;
+	
+	@Arg
 	public boolean filterKids = false;
+	
+	@Arg
 	public boolean noDefaultImport = false;
 	
 	public boolean isAttrVisible(AttrId attr) {
