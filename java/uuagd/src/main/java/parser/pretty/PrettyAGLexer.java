@@ -4,12 +4,9 @@
 
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
-import org.antlr.v4.runtime.misc.*;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class PrettyAGLexer extends Lexer {
@@ -61,23 +58,23 @@ public class PrettyAGLexer extends Lexer {
 	@Override
 	public void action(RuleContext _localctx, int ruleIndex, int actionIndex) {
 		switch (ruleIndex) {
-		case 0: ANY_CHAR_action((RuleContext)_localctx, actionIndex); break;
+		case 0: ANY_CHAR_action(_localctx, actionIndex); break;
 
-		case 1: AG_DATA_TYPE_action((RuleContext)_localctx, actionIndex); break;
+		case 1: AG_DATA_TYPE_action(_localctx, actionIndex); break;
 
-		case 3: END_BLOCK_COMMENT_action((RuleContext)_localctx, actionIndex); break;
+		case 3: END_BLOCK_COMMENT_action(_localctx, actionIndex); break;
 
-		case 4: WS_action((RuleContext)_localctx, actionIndex); break;
+		case 4: WS_action(_localctx, actionIndex); break;
 
-		case 5: VISIT_action((RuleContext)_localctx, actionIndex); break;
+		case 5: VISIT_action(_localctx, actionIndex); break;
 
-		case 6: ATTRS_action((RuleContext)_localctx, actionIndex); break;
+		case 6: ATTRS_action(_localctx, actionIndex); break;
 
-		case 7: ALTS_action((RuleContext)_localctx, actionIndex); break;
+		case 7: ALTS_action(_localctx, actionIndex); break;
 
-		case 8: COLON_action((RuleContext)_localctx, actionIndex); break;
+		case 8: COLON_action(_localctx, actionIndex); break;
 
-		case 17: HS_TYPE_action((RuleContext)_localctx, actionIndex); break;
+		case 17: HS_TYPE_action(_localctx, actionIndex); break;
 		}
 	}
 	private void COLON_action(RuleContext _localctx, int actionIndex) {

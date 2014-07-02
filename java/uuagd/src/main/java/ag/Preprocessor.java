@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.MatchResult;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import net.sourceforge.argparse4j.ArgumentParsers;
@@ -45,13 +44,13 @@ import util.ReplaceCallback;
 import ag.gen.ShallowEmbed;
 
 class Preprocessor {
-	final private static Pattern ALT_PAT = Pattern.compile("([A-Z][a-zA-Z0-9_']*|\\*)");
 	final private static Pattern LINE_PAT = Pattern.compile("\\{\\-# LINE (\\d+) \"(.*?)\" #\\-\\}");
 
 	final private Settings settings;
 
 	final private File agHsFile;
 	final private Map<File, File> agTempFiles;
+	final private Set<File> processedFiles = new HashSet<File>();
 
 	private RuleContext prettyTree;
 	private PrettyListener agInfo;
@@ -102,6 +101,11 @@ class Preprocessor {
 	}
 
 	private void processAG(File agFile, boolean isRoot) throws FileNotFoundException, IOException {
+		if (processedFiles.contains(agFile)) {
+			return;
+		}
+		processedFiles.add(agFile);
+
 		Map<Token, File> agFiles = new HashMap<Token, File>();
 		Map<Token, AttrUsage> attrUsages = new HashMap<Token, AttrUsage>();
 		Map<Token, AttrUsage[]> tupleAttrUsages = new HashMap<Token, AttrUsage[]>();
@@ -117,34 +121,51 @@ class Preprocessor {
 			Map<Token, AttrUsage> attrUsages,
 			Map<Token, AttrUsage[]> tupleAttrUsages,
 			List<Token> agTokens) throws FileNotFoundException, IOException {
-		Set<String> dataTypes = null;
-		Set<String> alts = null;
+		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(agFile));
+		RewriteAGLexer lexer = new RewriteAGLexer(input);
+
+		Map<String, String> setDecls = new HashMap<String, String>();
+		Token token = lexer.nextToken();
+		while (token.getType() != Recognizer.EOF) {
+			if (token.getType() == RewriteAGLexer.SET) {
+				String text = removeLeading(token.getText(), "set");
+				String[] parts = text.split("\\s*=\\s*");
+				setDecls.put(parts[0], parts[1]);
+			}
+			token = lexer.nextToken();
+		}
+		TypesFactory typesFactory = new TypesFactory(setDecls);
+
+		Types dataTypes = null;
+		Types alts = null;
 
 		// First lex the attribute grammar to determine which tokens have to be rewritten
 		// for the debugging to work, like creating local aliases for non-local attributes.
-		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(agFile));
-		RewriteAGLexer lexer = new RewriteAGLexer(input);
-		Token token = lexer.nextToken();
+		lexer.reset();
+		token = lexer.nextToken();
 		while (token.getType() != Recognizer.EOF) {
 			switch (token.getType()) {
 				case RewriteAGLexer.INCLUDE: {
 					String filename = removeOutsideChars(removeLeading(token.getText(), "include"));
 					File file = new File(filename);
-					if (!file.isAbsolute()) {
+					if (!file.exists()) {
 						file = new File(settings.agFile.getParent() + File.separator + filename);
 					}
-					createTempAG(file);
-					agFiles.put(token, file);
+					file = file.getCanonicalFile();
 
+					if (!agTempFiles.containsKey(file)) {
+						createTempAG(file);
+					}
+					agFiles.put(token, file);
 					agTokens.add(token);
 				}
 				break;
 				case RewriteAGLexer.SEM: {
-					dataTypes = parseTypes(removeLeading(token.getText(), "sem"));
+					dataTypes = typesFactory.create(removeLeading(token.getText(), "sem"));
 				}
 				break;
 				case RewriteAGLexer.ALT: {
-					alts = parseTypes(removeLeading(token.getText(), "|"));
+					alts = Types.fromString(removeLeading(token.getText(), "|"));
 				}
 				break;
 				case RewriteAGLexer.ATTR: {
@@ -280,9 +301,7 @@ class Preprocessor {
 					if (inEx != null) {
 						try {
 							in.close();
-						} catch (Throwable t) {
-							inEx.addSuppressed(t);
-						}
+						} catch (Throwable t) {}
 					} else {
 						in.close();
 					}
@@ -296,9 +315,7 @@ class Preprocessor {
 				if (outEx != null) {
 					try {
 						out.close();
-					} catch (Throwable t) {
-						outEx.addSuppressed(t);
-					}
+					} catch (Throwable t) {}
 				} else {
 					out.close();
 				}
@@ -315,7 +332,9 @@ class Preprocessor {
 		switch (token.getType()) {
 			case RewriteAGLexer.INCLUDE:
 				File file = agFiles.get(token);
-
+//				System.out.println(token);
+//				System.out.println(file);
+//				System.out.println(agTempFiles.get(file).getPath());
 				out.println();
 				out.print("include ");
 				out.print('"');
@@ -396,9 +415,7 @@ class Preprocessor {
 				if (inEx != null) {
 					try {
 						in.close();
-					} catch (Throwable t) {
-						inEx.addSuppressed(t);
-					}
+					} catch (Throwable t) {}
 				} else {
 					in.close();
 				}
@@ -417,9 +434,7 @@ class Preprocessor {
 				if (outEx != null) {
 					try {
 						out.close();
-					} catch (Throwable t) {
-						outEx.addSuppressed(t);
-					}
+					} catch (Throwable t) {}
 				} else {
 					out.close();
 				}
@@ -458,7 +473,7 @@ class Preprocessor {
 
 			// If something went wrong during the execution of the command,
 			// we have to terminate this program as well, otherwise it would become unreliable.
-			System.exit(1);
+			System.exit(0);
 		}
 	}
 
@@ -496,9 +511,7 @@ class Preprocessor {
 							if (brEx != null) {
 								try {
 									br.close();
-								} catch (Throwable t) {
-									brEx.addSuppressed(t);
-								}
+								} catch (Throwable t) {}
 							} else {
 								br.close();
 							}
@@ -536,21 +549,12 @@ class Preprocessor {
 		return s.substring(0, s.length() - trailing.length()).trim();
 	}
 
-	private static Set<String> parseTypes(String text) {
-		Set<String> types = new HashSet<String>();
-		Matcher m = ALT_PAT.matcher(text);
-		while (m.find()) {
-			types.add(m.group(1));
-		}
-		return types;
-	}
-
 	private static void error(String msg) {
 		System.err.println(msg);
-		System.exit(1);
+		System.exit(0);
 	}
 
-	public static void main(String[] args) throws Throwable {
+	public static void main(String[] args) {
 		ArgumentParser parser = ArgumentParsers.newArgumentParser("uuagd")
 				.defaultHelp(true)
 				.description("A debugger for UUAG files.");
@@ -566,11 +570,11 @@ class Preprocessor {
 		parser.addArgument("--whitelist")
 				.type(AttrId.class)
 				.nargs("*")
-				.help("A comma-seperated list of which attributes should only be shown");
+				.help("A whitespace seperated list of which attributes should only be shown");
 		parser.addArgument("--blacklist")
 				.type(AttrId.class)
 				.nargs("*")
-				.help("A comma-seperated list of which attributes should only not be shown");
+				.help("A whitespace seperated list of which attributes should only not be shown");
 		parser.addArgument("--filterKids")
 				.action(Arguments.storeTrue())
 				.help("Whether the children/kids/fields of a data type should also be considered when apply filters");
@@ -601,7 +605,12 @@ class Preprocessor {
 			System.exit(0);
 		}
 
-		Preprocessor dp = new Preprocessor(settings);
-		dp.preprocessAndCompile();
+		try {
+			Preprocessor dp = new Preprocessor(settings);
+			dp.preprocessAndCompile();
+		} catch (Exception e) {
+			System.out.println("Something went wrong:");
+			e.printStackTrace(System.out);
+		}
 	}
 }

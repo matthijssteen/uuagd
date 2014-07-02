@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,7 +16,13 @@ import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 
+import parser.dump.DumpAGLexer;
+
 public class TestLexer {
+	public static void main(String[] args) throws Exception {
+		testLexer(DumpAGLexer.class, new File("/sud/Code/Git/exp-project/src/TEA/AG/ConstrGen.hs"));
+	}
+	
 	public static <T extends Lexer> void testLexer(Class<T> cls, File input) throws Exception {
 		testLexer(cls, new BufferedReader(new FileReader(input)));
 	}
@@ -24,21 +32,45 @@ public class TestLexer {
 	}
 
 	public static <T extends Lexer> void testLexer(Class<T> cls, Reader in) throws Exception {
+		int i = 1;
+		int lastVal = 0;
+		String[] ruleNames = new String[((String[])cls.getDeclaredField("tokenNames").get(null)).length];
+		for (Field field: cls.getDeclaredFields()) {
+			int mod = field.getModifiers();
+			if (Modifier.isPublic(mod) && Modifier.isStatic(mod) && Modifier.isFinal(mod)
+					&& field.getType().getName().equals("int")) {
+				int val = field.getInt(null);
+				if (val > lastVal) {
+					ruleNames[i] = field.getName();
+					i++;
+					lastVal = val;
+				} else {
+					// Each subsequent constant should have an increasing value if they are token constants.
+					break;
+				}
+			} else if (lastVal != 0) {
+				// No longer a constant.
+				break;
+			}
+		}
+		
 		ANTLRInputStream input = new ANTLRInputStream(in);
 		T lexer = cls.getConstructor(CharStream.class).newInstance(input);
-
-		String[] tokenNames = (String[])cls.getDeclaredField("tokenNames").get(lexer);
-
+		
 		List<String[]> rows = new ArrayList<String[]>();
 		Token token = lexer.nextToken();
 		while(token.getType() != Recognizer.EOF) {
-			rows.add(new String[] { tokenNames[token.getType()], Strings.toLiteral(token.getText()), token.getLine() + ":" + token.getCharPositionInLine() });
+			rows.add(new String[] { ruleNames[token.getType()], Strings.toLiteral(token.getText()), token.getLine() + ":" + token.getCharPositionInLine() });
 			token = lexer.nextToken();
 		}
 		printRows(rows);
 	}
 
 	public static void printRows(List<String[]> rows) {
+		if (rows.isEmpty()) {
+			return;
+		}
+		
 		int n = rows.get(0).length;
 
 		int[] maxLengths = new int[n];

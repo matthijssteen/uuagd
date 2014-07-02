@@ -13,26 +13,35 @@ lexer grammar RewriteAGLexer;
     super.emit(token);
     lastTokenType = token.getType();
   }
+
+  @Override
+  public void reset() {
+    super.reset();
+    semBlock = false;
+    lastTokenType = 0;
+  }
 }
 
 
 ANY_CHAR : . -> skip;
 
-LINE_COMMENT : '--' .*? ('\r'? '\n' | '\r' | EOF) -> skip;
+LINE_COMMENT : '--' .*? ({_input.LA(1) == '\r' || _input.LA(1) == '\n'}? | EOF) -> skip;
 MULTILINE_COMMENT : '{-' (MULTILINE_COMMENT | .*?) '-}' -> skip;
 
+SET : NL 'set' WS+ TY WS* '=' WS* EXCL_STAR_TY_SET;
+
 DATA
-  : NL 'data' TY+
+  : NL 'data' (WS+ TY)+
     { semBlock = false; skip(); }
   ;
 
 SEM
-  : NL 'sem' STAR_TY+
+  : NL 'sem' WS+ EXCL_STAR_TY_SET
     { semBlock = true; }
   ;
 
 ALT
-  : NL '|' STAR_TY+
+  : NL '|' WS* EXCL_STAR_TY_SET
     { if (!semBlock) { skip(); } }
   ;
 
@@ -46,12 +55,14 @@ ATTR_TUPLE
     { if (!semBlock) { skip(); } }
   ;
 
-INCLUDE : NL 'include' WS+ '"'  (~["\\] | '\\' .)+? '"';
+INCLUDE : NL 'include' WS* '"'  (~["\\] | '\\' .)+? '"';
 
 fragment NAME : [a-z][a-zA-Z0-9_\']*;
 fragment ATTR_NAME : NAME '.' NAME;
-fragment TY : WS+ [A-Z][a-zA-Z0-9_\']*;
-fragment STAR_TY : (TY | WS+ '*');
+fragment TY : [A-Z][a-zA-Z0-9_\']*;
+fragment STAR_TY : (TY | '*');
+fragment STAR_TY_SET : STAR_TY (WS+ STAR_TY)*;
+fragment EXCL_STAR_TY_SET : STAR_TY_SET (WS* '-' WS* STAR_TY_SET)*;
 fragment NL : ({lastTokenType == 0}? | ('\r'? '\n' | '\r') WS*);
 fragment WS
   : [ \t\r\n]

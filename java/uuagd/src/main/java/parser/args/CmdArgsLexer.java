@@ -4,12 +4,9 @@
 
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
-import org.antlr.v4.runtime.misc.*;
 
 @SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
 public class CmdArgsLexer extends Lexer {
@@ -54,7 +51,7 @@ public class CmdArgsLexer extends Lexer {
 	@Override
 	public void action(RuleContext _localctx, int ruleIndex, int actionIndex) {
 		switch (ruleIndex) {
-		case 3: WhiteSpace_action((RuleContext)_localctx, actionIndex); break;
+		case 3: WhiteSpace_action(_localctx, actionIndex); break;
 		}
 	}
 	private void WhiteSpace_action(RuleContext _localctx, int actionIndex) {

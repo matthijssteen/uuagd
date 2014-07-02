@@ -24,17 +24,17 @@ public class AttrUsageFactory {
 		this.attrUsages = new HashMap<String, Map<String, List<AttrUsage>>>();
 	}
 
-	public AttrUsage create(Set<String> dataTypes, Set<String> alts, String scope, String name) {
+	public AttrUsage create(Types dataTypes, Types alts, String scope, String name) {
 		Map<String, Map<String, Set<AttrDef>>> defsByDataType =
 				new HashMap<String, Map<String, Set<AttrDef>>>();
 		AttrUsage usage = new AttrUsage(scope, name, defsByDataType);
 
-		for (String dataType: dataTypes.contains("*") ? agInfo.kidsByDataType.keySet() : dataTypes) {
+		for (String dataType: dataTypes.getConcreteSet(agInfo.kidsByDataType.keySet())) {
 			if (!attrUsages.containsKey(dataType)) {
 				attrUsages.put(dataType, new HashMap<String, List<AttrUsage>>());
 			}
 
-			for (String alt: alts.contains("*") ? agInfo.kidsByDataType.get(dataType).keySet() : alts) {
+			for (String alt: alts.getConcreteSet(agInfo.kidsByDataType.get(dataType).keySet())) {
 				if (!attrUsages.get(dataType).containsKey(alt)) {
 					attrUsages.get(dataType).put(alt, new ArrayList<AttrUsage>());
 				}
@@ -77,7 +77,7 @@ public class AttrUsageFactory {
 		return usage;
 	}
 
-	public AttrUsage create(Set<String> dataTypes, Set<String> alts, String tokenText) {
+	public AttrUsage create(Types dataTypes, Types alts, String tokenText) {
 		String[] parts = tokenText.replaceAll("[^a-zA-Z0-9_\\.']", "").split("\\.");
 		return create(dataTypes, alts, parts[0], parts[1]);
 	}

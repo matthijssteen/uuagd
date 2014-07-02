@@ -1,5 +1,5 @@
 name:          uuagd
-version:       0.1.0.2
+version:       0.1.0.3
 synopsis:      A debugger for the UUAG system.
 homepage:      https://github.com/matthijssteen/uuagd
 license:       OtherLicense
@@ -12,7 +12,7 @@ build-type:    Simple
 cabal-version: >= 1.8
 data-files:
   resources/template.html
-  resources/uuagd-1.1.jar
+  resources/uuagd-1.0.3.jar
 
 library
   build-depends:
