@@ -1,9 +1,8 @@
 module Main where
 
+import Paths_uuagd
 import System.Environment
 import System.Process
-
-import Paths_uuagd
 
 main :: IO ()
 main = do

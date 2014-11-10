@@ -31,6 +31,6 @@ jar {
                 'Built-By': System.getProperty('user.name'),
                 'Built-Date': new Date(),
                 'Built-JDK': System.getProperty('java.version'),
-                'Main-Class': 'ag.Preprocessor'
+                'Main-Class': 'Main'
     }
 }

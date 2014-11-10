@@ -9,4 +9,10 @@ public class Files {
 			throw new IOException("Failed to delete file: " + file);
 		}
 	}
+	
+	public static String getWithoutExt(String filename) {
+		int pos = filename.lastIndexOf('.');
+		if (pos == -1) return filename;
+		return filename = filename.substring(0, pos);
+	}
 }

@@ -26,10 +26,13 @@ public class Settings extends Value {
 	public List<AttrId> blacklist;
 	
 	@Arg
-	public boolean filterKids = false;
+	public boolean filterKids;
 	
 	@Arg
-	public boolean noDefaultImport = false;
+	public String embedImport;
+	
+	@Arg
+	public boolean showCode;
 	
 	public boolean isAttrVisible(AttrId attr) {
 		return (whitelist == null || inList(attr, whitelist)) && !inList(attr, blacklist);

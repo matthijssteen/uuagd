@@ -32,6 +32,19 @@ public class DumpAGParserBaseListener implements DumpAGParserListener {
 	 * <p/>
 	 * The default implementation does nothing.
 	 */
+	@Override public void enterDataConVals(@NotNull DumpAGParser.DataConValsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitDataConVals(@NotNull DumpAGParser.DataConValsContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
 	@Override public void enterTypeMapEntry(@NotNull DumpAGParser.TypeMapEntryContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -156,6 +169,19 @@ public class DumpAGParserBaseListener implements DumpAGParserListener {
 	 * The default implementation does nothing.
 	 */
 	@Override public void exitList(@NotNull DumpAGParser.ListContext ctx) { }
+
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void enterCode(@NotNull DumpAGParser.CodeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 * <p/>
+	 * The default implementation does nothing.
+	 */
+	@Override public void exitCode(@NotNull DumpAGParser.CodeContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

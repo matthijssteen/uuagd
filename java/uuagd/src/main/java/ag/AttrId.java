@@ -46,4 +46,17 @@ public class AttrId extends Value {
 		this.scope = scope;
 		this.name = name;
 	}
+	
+	public String getScopedName() {
+		String s = "";
+		if (scope != null) {
+			s += scope + ".";
+		}
+		s += name;
+		return s;
+	}
+	
+	public String getUsageName() {
+		return "@" + getScopedName();
+	}
 }

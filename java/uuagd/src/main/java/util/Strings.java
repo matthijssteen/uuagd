@@ -47,7 +47,7 @@ public class Strings {
 				sb.append("\\\\");
 				break;
 			case '"':
-				sb.append("\"");
+				sb.append("\\\"");
 				break;
 			default:
 				sb.append(Character.toChars(point));
@@ -56,5 +56,18 @@ public class Strings {
 		}
 		sb.append('"');
 		return sb.toString();
+	}
+	
+	public static String removeOutsideChars(String s) {
+		return s.substring(1, s.length() - 1);
+	}
+
+	public static String removeLeading(String s, String leading) {
+		return s.trim().substring(leading.length()).trim();
+	}
+
+	public static String removeTrailing(String s, String trailing) {
+		s = s.trim();
+		return s.substring(0, s.length() - trailing.length()).trim();
 	}
 }

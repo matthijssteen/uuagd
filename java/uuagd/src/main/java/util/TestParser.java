@@ -19,7 +19,7 @@ import parser.dump.DumpAGParser;
 
 public class TestParser {
 	public static void main(String[] args) throws Exception {
-		testParser(DumpAGLexer.class, DumpAGParser.class, new File("/sud/Code/Git/exp-project/src/TEA/AG/ConstrGen.hs"));
+		testParser(DumpAGLexer.class, DumpAGParser.class, new File("/sud/Code/Webroot/dump.uuagd.hs"));
 	}
 	
 	public static <L extends Lexer, P extends Parser> void testParser(Class<L> lexerClass, Class<P> parserClass, File input) throws Exception {

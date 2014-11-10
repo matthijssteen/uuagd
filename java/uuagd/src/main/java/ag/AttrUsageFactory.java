@@ -13,15 +13,12 @@ import java.util.Map;
 import java.util.Set;
 
 public class AttrUsageFactory {
-	final public Map<String, Map<String, List<AttrUsage>>> attrUsages;
-
-	final private PrettyListener agInfo;
+	final private GrammarInfo agInfo;
 	final private Settings settings;
 
-	public AttrUsageFactory(PrettyListener agInfo, Settings settings) {
+	public AttrUsageFactory(GrammarInfo agInfo, Settings settings) {
 		this.agInfo = agInfo;
 		this.settings = settings;
-		this.attrUsages = new HashMap<String, Map<String, List<AttrUsage>>>();
 	}
 
 	public AttrUsage create(Types dataTypes, Types alts, String scope, String name) {
@@ -30,20 +27,20 @@ public class AttrUsageFactory {
 		AttrUsage usage = new AttrUsage(scope, name, defsByDataType);
 
 		for (String dataType: dataTypes.getConcreteSet(agInfo.kidsByDataType.keySet())) {
-			if (!attrUsages.containsKey(dataType)) {
-				attrUsages.put(dataType, new HashMap<String, List<AttrUsage>>());
+			if (!agInfo.attrUsages.containsKey(dataType)) {
+				agInfo.attrUsages.put(dataType, new HashMap<String, List<AttrUsage>>());
 			}
 
 			for (String alt: alts.getConcreteSet(agInfo.kidsByDataType.get(dataType).keySet())) {
-				if (!attrUsages.get(dataType).containsKey(alt)) {
-					attrUsages.get(dataType).put(alt, new ArrayList<AttrUsage>());
+				if (!agInfo.attrUsages.get(dataType).containsKey(alt)) {
+					agInfo.attrUsages.get(dataType).put(alt, new ArrayList<AttrUsage>());
 				}
 
 				if (!settings.isAttrVisible(new AttrId(dataType, alt, scope, name))) {
 					continue;
 				}
 
-				attrUsages.get(dataType).get(alt).add(usage);
+				agInfo.attrUsages.get(dataType).get(alt).add(usage);
 
 				Set<AttrDef> defs = new HashSet<AttrDef>();
 

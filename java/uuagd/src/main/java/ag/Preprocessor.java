@@ -8,12 +8,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,11 +19,6 @@ import java.util.Set;
 import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 
-import net.sourceforge.argparse4j.ArgumentParsers;
-import net.sourceforge.argparse4j.impl.Arguments;
-import net.sourceforge.argparse4j.inf.ArgumentParser;
-import net.sourceforge.argparse4j.inf.ArgumentParserException;
-
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Recognizer;
@@ -35,15 +26,19 @@ import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
-import parser.args.CmdArgsLexer;
+import parser.dump.DumpAGLexer;
+import parser.dump.DumpAGParser;
+import parser.dump.DumpAGParser.RootContext;
 import parser.pretty.PrettyAGLexer;
 import parser.pretty.PrettyAGParser;
 import parser.rewrite.RewriteAGLexer;
+import util.Cmd;
 import util.Files;
 import util.ReplaceCallback;
-import ag.gen.ShallowEmbed;
+import util.Strings;
+import ag.embed.Embed;
 
-class Preprocessor {
+public class Preprocessor {
 	final private static Pattern LINE_PAT = Pattern.compile("\\{\\-# LINE (\\d+) \"(.*?)\" #\\-\\}");
 
 	final private Settings settings;
@@ -51,16 +46,16 @@ class Preprocessor {
 	final private File agHsFile;
 	final private Map<File, File> agTempFiles;
 	final private Set<File> processedFiles = new HashSet<File>();
+	final private GrammarInfo agInfo = new GrammarInfo();
 
 	private RuleContext prettyTree;
-	private PrettyListener agInfo;
 	private AttrUsageFactory attrUsageFactory;
 	private File agTempFile;
 
 	public Preprocessor(Settings settings) throws Exception {
 		this.settings = settings;
 
-		agHsFile = new File(getWithoutExt(settings.agFile.getPath()) + ".hs");
+		agHsFile = new File(Files.getWithoutExt(settings.agFile.getPath()) + ".hs");
 		agTempFiles = new HashMap<File, File>();
 	}
 
@@ -76,7 +71,7 @@ class Preprocessor {
 	private void parsePrettyOutput() throws IOException {
 		File hsTempFile = File.createTempFile("uuagd", ".hs");
 
-		exec("uuagc -H --pretty -o " + hsTempFile.getPath() + " " + settings.agFile.getPath(), System.out);
+		Cmd.exec("uuagc -H --pretty -o " + hsTempFile.getPath() + " " + settings.agFile.getPath(), System.out);
 
 		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(hsTempFile));
 		PrettyAGLexer lexer = new PrettyAGLexer(input);
@@ -86,15 +81,40 @@ class Preprocessor {
 
 		Files.delete(hsTempFile);
 	}
+	
+	private void gatherInfo() throws IOException {
+		gatherPrettyInfo();
+		if (settings.showCode) {
+			gatherDumpInfo();
+		}
+	}
 
-	private void gatherInfo() {
+	private void gatherPrettyInfo() {
 		ParseTreeWalker walker = new ParseTreeWalker();
-		agInfo = new PrettyListener();
-		walker.walk(agInfo, prettyTree);
+		PrettyInfoGatherer gatherer = new PrettyInfoGatherer(agInfo);
+		walker.walk(gatherer, prettyTree);
 
 		attrUsageFactory = new AttrUsageFactory(agInfo, settings);
 	}
+	
+	private void gatherDumpInfo() throws IOException {
+		File hsTempFile = File.createTempFile("uuagd", ".hs");
 
+		Cmd.exec("uuagc -H --dumpgrammar -o " + hsTempFile.getPath() + " " + settings.agFile.getPath(), System.out);
+
+		ANTLRInputStream input = new ANTLRInputStream(new FileInputStream(hsTempFile));
+		DumpAGLexer lexer = new DumpAGLexer(input);
+		CommonTokenStream tokens = new CommonTokenStream(lexer);
+		DumpAGParser parser = new DumpAGParser(tokens);
+		RootContext dump = parser.root();
+		
+		ParseTreeWalker walker = new ParseTreeWalker();
+		DumpInfoGatherer gatherer = new DumpInfoGatherer(agInfo);
+		walker.walk(gatherer, dump);
+		
+		Files.delete(hsTempFile);
+	}
+	
 	private void preprocess() throws Exception {
 		agTempFile = createTempAG(settings.agFile);
 		processAG(settings.agFile, true);
@@ -128,7 +148,7 @@ class Preprocessor {
 		Token token = lexer.nextToken();
 		while (token.getType() != Recognizer.EOF) {
 			if (token.getType() == RewriteAGLexer.SET) {
-				String text = removeLeading(token.getText(), "set");
+				String text = Strings.removeLeading(token.getText(), "set");
 				String[] parts = text.split("\\s*=\\s*");
 				setDecls.put(parts[0], parts[1]);
 			}
@@ -146,7 +166,7 @@ class Preprocessor {
 		while (token.getType() != Recognizer.EOF) {
 			switch (token.getType()) {
 				case RewriteAGLexer.INCLUDE: {
-					String filename = removeOutsideChars(removeLeading(token.getText(), "include"));
+					String filename = Strings.removeOutsideChars(Strings.removeLeading(token.getText(), "include"));
 					File file = new File(filename);
 					if (!file.exists()) {
 						file = new File(settings.agFile.getParent() + File.separator + filename);
@@ -161,11 +181,11 @@ class Preprocessor {
 				}
 				break;
 				case RewriteAGLexer.SEM: {
-					dataTypes = typesFactory.create(removeLeading(token.getText(), "sem"));
+					dataTypes = typesFactory.create(Strings.removeLeading(token.getText(), "sem"));
 				}
 				break;
 				case RewriteAGLexer.ALT: {
-					alts = Types.fromString(removeLeading(token.getText(), "|"));
+					alts = Types.fromString(Strings.removeLeading(token.getText(), "|"));
 				}
 				break;
 				case RewriteAGLexer.ATTR: {
@@ -188,7 +208,7 @@ class Preprocessor {
 				break;
 				case RewriteAGLexer.ATTR_TUPLE: {
 					if (dataTypes != null && alts != null) {
-						String[] tupleTexts = removeOutsideChars(removeTrailing(token.getText(), "=")).split(",");
+						String[] tupleTexts = Strings.removeOutsideChars(Strings.removeTrailing(token.getText(), "=")).split(",");
 						AttrUsage[] usages = new AttrUsage[tupleTexts.length];
 						for (int j = 0; j < tupleTexts.length; j++) {
 							usages[j] = attrUsageFactory.create(dataTypes, alts, tupleTexts[j]);
@@ -290,8 +310,7 @@ class Preprocessor {
 					out.println();
 
 					ParseTreeWalker walker = new ParseTreeWalker();
-					ShallowEmbed gen = new ShallowEmbed(out, agInfo, attrUsageFactory.attrUsages, settings);
-					walker.walk(gen, prettyTree);
+					walker.walk(new Embed(out, agInfo, settings), prettyTree);
 				}
 			} catch (IOException e) {
 				inEx = e;
@@ -332,9 +351,6 @@ class Preprocessor {
 		switch (token.getType()) {
 			case RewriteAGLexer.INCLUDE:
 				File file = agFiles.get(token);
-//				System.out.println(token);
-//				System.out.println(file);
-//				System.out.println(agTempFiles.get(file).getPath());
 				out.println();
 				out.print("include ");
 				out.print('"');
@@ -381,7 +397,7 @@ class Preprocessor {
 	}
 
 	private void compile() throws IOException {
-		exec("uuagc " + settings.uuagcOptions + " -o " + agHsFile.getPath() + " " + agTempFile.getPath(), System.out);
+		Cmd.exec("uuagc " + settings.uuagcOptions + " -o " + agHsFile.getPath() + " " + agTempFile.getPath(), System.out);
 	}
 	private void restoreFileReferences() throws IOException {
 		final Map<File, File> agFiles = new HashMap<File, File>();
@@ -442,175 +458,14 @@ class Preprocessor {
 		}
 	}
 
-	private void exec(String cmd, Appendable... dests) throws IOException {
-		System.out.println("Executing: " + cmd);
-
-		// Execute the given command and wait until it has terminated.
-		String[] args = parseCmd(cmd);
-		ProcessBuilder pb = new ProcessBuilder(args);
-		pb.redirectErrorStream(true);
-		Process p = pb.start();
-		Thread t = inheritIO(p.getInputStream(), dests);
-		t.start();
-		try {
-			p.waitFor();
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
-
-		// Waiting for the process does not mean that we are finished reading the output stream,
-		// so we have to join the stream handler thread.
-		try {
-			t.join();
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
-
-		if (p.exitValue() == 0) {
-			System.out.println("Exited with success.");
-		} else {
-			System.out.println("Exited with failure.");
-
-			// If something went wrong during the execution of the command,
-			// we have to terminate this program as well, otherwise it would become unreliable.
-			System.exit(0);
-		}
-	}
-
-	private static String[] parseCmd(String cmd) throws IOException {
-		ANTLRInputStream input = new ANTLRInputStream(new StringReader(cmd));
-		CmdArgsLexer lexer = new CmdArgsLexer(input);
-		List<String> args = new ArrayList<String>();
-		Token token = lexer.nextToken();
-		while(token.getType() != Recognizer.EOF) {
-			args.add(token.getText());
-			token = lexer.nextToken();
-		}
-		return args.toArray(new String[args.size()]);
-	}
-
-	private static Thread inheritIO(final InputStream src, final Appendable[] dests) {
-		return new Thread(new Runnable() {
-			@Override
-			public void run() {
-				try {
-					final BufferedReader br = new BufferedReader(new InputStreamReader(src));
-					Throwable brEx = null;
-					try {
-						String line;
-						while ((line = br.readLine()) != null) {
-							for (Appendable dest: dests) {
-								dest.append(line).append(System.getProperty("line.separator"));
-							}
-						}
-					} catch (IOException e) {
-						brEx = e;
-						throw e;
-					} finally {
-						if (br != null) {
-							if (brEx != null) {
-								try {
-									br.close();
-								} catch (Throwable t) {}
-							} else {
-								br.close();
-							}
-						}
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
-
 	private File createTempAG(File agFile) throws IOException {
 		File agTempFile = File.createTempFile("uuagd", ".ag");
 		agTempFiles.put(agFile, agTempFile);
 		return agTempFile;
 	}
 
-	private static String getWithoutExt(String filename) {
-		int pos = filename.lastIndexOf('.');
-		if (pos == -1) return filename;
-		return filename = filename.substring(0, pos);
-	}
-
-	private static String removeOutsideChars(String s) {
-		return s.substring(1, s.length() - 1);
-	}
-
-	private static String removeLeading(String s, String leading) {
-		return s.trim().substring(leading.length()).trim();
-	}
-
-	private static String removeTrailing(String s, String trailing) {
-		s = s.trim();
-		return s.substring(0, s.length() - trailing.length()).trim();
-	}
-
 	private static void error(String msg) {
 		System.err.println(msg);
 		System.exit(0);
-	}
-
-	public static void main(String[] args) {
-		ArgumentParser parser = ArgumentParsers.newArgumentParser("uuagd")
-				.defaultHelp(true)
-				.description("A debugger for UUAG files.");
-		parser.addArgument("uuagcOptions")
-				.help("Options to be passed along to the UUAG Compiler");
-		parser.addArgument("agFile")
-				.type(File.class)
-				.help("The UUAG file to debug");
-		parser.addArgument("castFn")
-				.help("The Haskell function that will cast attribute values to the cast type so that they can be inspected");
-		parser.addArgument("castTy")
-				.help("The return type of the cast function");
-		parser.addArgument("--whitelist")
-				.type(AttrId.class)
-				.nargs("*")
-				.help("A whitespace seperated list of which attributes should only be shown");
-		parser.addArgument("--blacklist")
-				.type(AttrId.class)
-				.nargs("*")
-				.help("A whitespace seperated list of which attributes should only not be shown");
-		parser.addArgument("--filterKids")
-				.action(Arguments.storeTrue())
-				.help("Whether the children/kids/fields of a data type should also be considered when apply filters");
-		parser.addArgument("--noDefaultImport")
-				.action(Arguments.storeTrue())
-				.help("Whether the default code generation module should not be imported");
-
-		if (args.length > 0) {
-			// The uuagc options are ambiguous to the argument parser,
-			// so we make sure it is recognized as a string.
-			args[0] = '"' + args[0] + '"';
-
-			// Apparently the positional arguments are required,
-			// even when the help arguments are given.
-			List<String> argList = Arrays.asList(args);
-			if (argList.contains("-h") || argList.contains("--help")) {
-				parser.printHelp();
-				System.exit(0);
-			}
-		}
-
-		Settings settings = new Settings();
-		try {
-			parser.parseArgs(args, settings);
-			settings.uuagcOptions = removeOutsideChars(settings.uuagcOptions);
-		} catch (ArgumentParserException e) {
-			parser.handleError(e);
-			System.exit(0);
-		}
-
-		try {
-			Preprocessor dp = new Preprocessor(settings);
-			dp.preprocessAndCompile();
-		} catch (Exception e) {
-			System.out.println("Something went wrong:");
-			e.printStackTrace(System.out);
-		}
 	}
 }

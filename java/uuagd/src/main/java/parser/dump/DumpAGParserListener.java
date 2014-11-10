@@ -22,6 +22,17 @@ public interface DumpAGParserListener extends ParseTreeListener {
 	void exitVal(@NotNull DumpAGParser.ValContext ctx);
 
 	/**
+	 * Enter a parse tree produced by {@link DumpAGParser#dataConVals}.
+	 * @param ctx the parse tree
+	 */
+	void enterDataConVals(@NotNull DumpAGParser.DataConValsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link DumpAGParser#dataConVals}.
+	 * @param ctx the parse tree
+	 */
+	void exitDataConVals(@NotNull DumpAGParser.DataConValsContext ctx);
+
+	/**
 	 * Enter a parse tree produced by {@link DumpAGParser#typeMapEntry}.
 	 * @param ctx the parse tree
 	 */
@@ -130,6 +141,17 @@ public interface DumpAGParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitList(@NotNull DumpAGParser.ListContext ctx);
+
+	/**
+	 * Enter a parse tree produced by {@link DumpAGParser#code}.
+	 * @param ctx the parse tree
+	 */
+	void enterCode(@NotNull DumpAGParser.CodeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link DumpAGParser#code}.
+	 * @param ctx the parse tree
+	 */
+	void exitCode(@NotNull DumpAGParser.CodeContext ctx);
 
 	/**
 	 * Enter a parse tree produced by {@link DumpAGParser#dataConVal}.

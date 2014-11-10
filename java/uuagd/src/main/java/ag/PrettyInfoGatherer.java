@@ -6,7 +6,7 @@ import java.util.Map;
 import parser.pretty.PrettyAGParser;
 import parser.pretty.PrettyAGParserBaseListener;
 
-public class PrettyListener extends PrettyAGParserBaseListener {
+public class PrettyInfoGatherer extends PrettyAGParserBaseListener {
 	final public static Map<Integer, AttrKind> ATTR_KIND_MAPPING =
 			new HashMap<Integer, AttrKind>();
 
@@ -16,29 +16,31 @@ public class PrettyListener extends PrettyAGParserBaseListener {
 		ATTR_KIND_MAPPING.put(PrettyAGParser.CHN, AttrKind.CHN);
 	}
 
-	final public Map<String, Map<AttrKind, Map<String, AttrDef>>> defsByDataType =
-			new HashMap<String, Map<AttrKind, Map<String, AttrDef>>>();
+	final private GrammarInfo agInfo;
+	
 	private Map<AttrKind, Map<String, AttrDef>> defsByKind;
 	private Map<String, AttrDef> defsByName;
 
-	final public Map<String, Map<String, Map<String, String>>> kidsByDataType =
-			new HashMap<String, Map<String, Map<String, String>>>();
 	private Map<String, Map<String, String>> kidsByAlt;
 	private Map<String, String> kidsByName;
-
+	
 	private String dataType;
 	private AttrKind kind;
 	private String alt;
 
+	public PrettyInfoGatherer(GrammarInfo agInfo) {
+		this.agInfo = agInfo;
+	}
+	
 	@Override
 	public void enterData(PrettyAGParser.DataContext ctx) {
 		dataType = ctx.AG_DATA_TYPE().getText();
 
 		defsByKind = new HashMap<AttrKind, Map<String, AttrDef>>();
-		defsByDataType.put(dataType, defsByKind);
+		agInfo.defsByDataType.put(dataType, defsByKind);
 
 		kidsByAlt = new HashMap<String, Map<String, String>>();
-		kidsByDataType.put(dataType, kidsByAlt);
+		agInfo.kidsByDataType.put(dataType, kidsByAlt);
 	}
 
 	@Override
